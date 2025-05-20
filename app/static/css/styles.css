@@ -1,0 +1,46 @@
+body {
+    background-color: #f8f9fa;
+}
+.card {
+    border-radius: 12px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.05);
+}
+.card-header {
+    font-size: 1.2rem;
+    font-weight: 600;
+}
+.list-group-item {
+    line-height: 1.6;
+    font-size: 1.05rem;
+}
+.card-date {
+    width: 12rem; 
+    border-left: 5px solid #0d6efd;
+}
+
+/* FOOTER */
+.footer-container {
+    background-color: #f8f9fa; 
+    padding: 20px 0; 
+    text-align: center; 
+    border-top: 1px solid #ddd; 
+    border-bottom: 1px solid #ddd;
+    margin-top: 40px;
+}
+.footer-source-info {
+    margin: 0 0 10px; 
+    font-size: 14px; 
+    color: #555;
+}
+.footer-logos {
+    display: flex; 
+    justify-content: center; 
+    align-items: center; 
+    gap: 30px; 
+    flex-wrap: wrap;
+}
+.footer-text {
+    margin-top: 10px; 
+    font-size: 12px; 
+    color: #888;
+}
