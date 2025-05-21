@@ -88,6 +88,40 @@ def scrape_inshorts_headlines():
 
     return {"Inshorts - News of the Day": top_headlines}
 
+def scrape_ibt_term_of_day():
+    url = "https://www.ibtimes.com/terms"
+    headers = {
+        "User-Agent": "Mozilla/5.0"
+    }
+
+    response = requests.get(url, headers=headers)
+    soup = BeautifulSoup(response.content, "html.parser")
+
+    result = []
+
+    term_section = soup.find("div", class_="term-of-day")
+    if term_section:
+        col_r = term_section.find("div", class_="col-r")
+        if col_r:
+            h4_tag = col_r.find("h4")
+            p_tag = col_r.find("p")
+
+            term = h4_tag.get_text(strip=True) if h4_tag else None
+            definition = p_tag.get_text(strip=True).split("Read more")[0] if p_tag else None
+
+            if term and definition:
+                result.append(f"📘 {term}: {definition}")
+            else:
+                result.append("⚠️ Could not extract term or definition.")
+        else:
+            result.append("⚠️ Section not found.")
+    else:
+        result.append("⚠️ Term of the Day section not found.")
+
+    return {"IBT - Financial Term of the Day": result}
+
+
+
 
 
 
