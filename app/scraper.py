@@ -79,7 +79,7 @@ def scrape_inshorts_headlines():
     headlines = soup.find_all("span", itemprop="headline")
 
     top_headlines = []
-    for i, headline in enumerate(headlines[:3]):  # Top 3 only
+    for i, headline in enumerate(headlines[:5]):  # Top 3 only
         text = headline.get_text(strip=True)
         top_headlines.append(f"📰 {i+1}. {text}")
 
@@ -88,8 +88,8 @@ def scrape_inshorts_headlines():
 
     return {"Inshorts - News of the Day": top_headlines}
 
-def scrape_ibt_term_of_day():
-    url = "https://www.ibtimes.com/terms"
+def scrape_financial_term_of_day():
+    url = "https://www.investopedia.com/financial-term-dictionary-4769738"
     headers = {
         "User-Agent": "Mozilla/5.0"
     }
@@ -99,26 +99,17 @@ def scrape_ibt_term_of_day():
 
     result = []
 
-    term_section = soup.find("div", class_="term-of-day")
-    if term_section:
-        col_r = term_section.find("div", class_="col-r")
-        if col_r:
-            h4_tag = col_r.find("h4")
-            p_tag = col_r.find("p")
+    term_tag = soup.find("a", class_="tod__title")
+    definition_tag = soup.find("span", class_="tod__description")
 
-            term = h4_tag.get_text(strip=True) if h4_tag else None
-            definition = p_tag.get_text(strip=True).split("Read more")[0] if p_tag else None
-
-            if term and definition:
-                result.append(f"📘 {term}: {definition}")
-            else:
-                result.append("⚠️ Could not extract term or definition.")
-        else:
-            result.append("⚠️ Section not found.")
+    if term_tag and definition_tag:
+        term = term_tag.get_text(strip=True)
+        definition = definition_tag.get_text(strip=True)
+        result.append(f"📘 {term}: {definition}")
     else:
-        result.append("⚠️ Term of the Day section not found.")
+        result.append("⚠️ Could not extract Investopedia term of the day.")
 
-    return {"IBT - Financial Term of the Day": result}
+    return {"Investopedia - Financial Term of the Day": result}
 
 
 
