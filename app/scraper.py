@@ -1,6 +1,18 @@
 import requests
 from bs4 import BeautifulSoup
 from datetime import datetime
+from google.oauth2.credentials import Credentials
+from google_auth_oauthlib.flow import InstalledAppFlow
+from google.auth.transport.requests import Request
+from googleapiclient.discovery import build
+from dotenv import load_dotenv
+import os
+import base64
+import re
+import html
+
+# Load env vars
+load_dotenv()
 
 def scrape_today_in_history():
     # Automatically get today's month and day
@@ -88,31 +100,62 @@ def scrape_inshorts_headlines():
 
     return {"Inshorts - News of the Day": top_headlines}
 
+############ GMAIL API INTEGRATION ############
+
+def get_gmail_service():
+    creds = Credentials(
+        None,
+        refresh_token=os.getenv("GMAIL_REFRESH_TOKEN"),
+        token_uri=os.getenv("GMAIL_TOKEN_URI"),
+        client_id=os.getenv("GMAIL_CLIENT_ID"),
+        client_secret=os.getenv("GMAIL_CLIENT_SECRET")
+    )
+    
+    # Refresh the token if needed
+    if creds.expired or not creds.valid:
+        creds.refresh(Request())
+
+    service = build('gmail', 'v1', credentials=creds)
+    return service
+
+def get_financial_term_email(service):
+    result = service.users().messages().list(
+        userId=os.getenv("GMAIL_USER_EMAIL", "me"),
+        q='from:newsletters@mail.investopedia.com subject:"Term of the Day:"',
+        maxResults=1
+    ).execute()
+
+    print("Result",result)
+
+    messages = result.get('messages', [])
+    print("Messages",messages)
+    if not messages:
+        return "⚠️ No Term of the Day email found."
+
+    msg = service.users().messages().get(userId='me',id=messages[0]['id'],format='metadata',metadataHeaders=['Subject']).execute()
+    print("Msg:",msg)
+
+   # Extract subject line
+    subject = next((h['value'] for h in msg['payload'].get('headers', []) if h['name'] == 'Subject'), "Unknown Term")
+    subject_match = re.search(r'Term of the Day: (.+)', subject)
+    term = subject_match.group(1).strip() if subject_match else "Unknown Term"
+    print("Subject",subject)
+    print("Subject_match",subject_match)
+    print("Term",term)
+
+    # Use the snippet as the definition
+    raw_snippet = msg.get('snippet', '')
+    definition = html.unescape(raw_snippet.strip())
+
+    print("Snippet",raw_snippet)
+    print("Definition",definition)
+
+    return f"📘 {term}: {definition}"
+
 def scrape_financial_term_of_day():
-    url = "https://www.investopedia.com/financial-term-dictionary-4769738"
-    headers = {
-        "User-Agent": "Mozilla/5.0"
-    }
-
-    response = requests.get(url, headers=headers)
-    soup = BeautifulSoup(response.content, "html.parser")
-
-    result = []
-
-    term_tag = soup.find("a", class_="tod__title")
-    definition_tag = soup.find("span", class_="tod__description")
-
-    if term_tag and definition_tag:
-        term = term_tag.get_text(strip=True)
-        definition = definition_tag.get_text(strip=True)
-        result.append(f"📘 {term}: {definition}")
-    else:
-        result.append("⚠️ Could not extract Investopedia term of the day.")
-
-    return {"Investopedia - Financial Term of the Day": result}
-
-
-
-
-
-
+    try:
+        service = get_gmail_service()
+        term_of_day = get_financial_term_email(service)
+        return {"Investopedia - Financial Term of the Day": [term_of_day]}
+    except Exception as e:
+        return {"Investopedia - Financial Term of the Day": [f"⚠️ Error: {str(e)}"]}
