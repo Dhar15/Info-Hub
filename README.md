@@ -5,7 +5,7 @@
 - 📰 **News of the Day** — Top stories scraped from Inshorts  
 - 📜 **On This Day in History** — Significant historical events via Wikipedia  
 - 🗣️ **Word of the Day** — Vocabulary building via dictionary APIs or scraping  
-- 📘 **Financial Term of the Day** — Pulled directly from a **Gmail account** (Investopedia newsletter) using the Gmail API
+- 📘 **Financial Term of the Day** — Pulled directly from a Gmail account (Investopedia newsletter) using the Gmail API
 
 ---
 
@@ -31,7 +31,6 @@
 - `Gmail API` (OAuth 2.0 + Google API Client)
 - `BeautifulSoup` (for web scraping)
 - `Cloud Run` (for deployment)
-- `.env` (for secure secret management)
 
 ---
 
